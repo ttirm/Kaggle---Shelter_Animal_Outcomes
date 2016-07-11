@@ -1,6 +1,9 @@
 #Animal Sherter Outcome
-setwd("C:/Users/tiago_000/Documents/GitHub/Kaggle - Shelter_Animal_Outcomes")
+#setwd("C:/Users/tiago_000/Documents/GitHub/Kaggle - Shelter_Animal_Outcomes")
+setwd("C:/Users/QSR/Documents/GitHub/Kaggle---Shelter_Animal_Outcomes")
 
+library(caret)
+library(RANN)
 
 
 train <- read.csv("./data/train.csv", na.strings = c("", "Unknown"))
@@ -103,13 +106,11 @@ sum(is.na(train$OutcomeSubtype))/length(train$OutcomeSubtype)*100
 
 
 
-train[is.na(train$AgeuponOutcome),]
-train$AgeuponOutcome
-grep("[0-9]+ ", x)
-x <- train$AgeuponOutcome[1]
+
+
 values <- train$AgeuponOutcome[!is.na(train$AgeuponOutcome)]
 res <- apply(as.matrix(values), 1, function(x) {trimws(substr(x, grep("[0-9] ", x)+2, nchar(as.character(x))))})
-mult <- substr(res, grep(" ", res)+1, nchar(as.character(res)))
+#mult <- substr(res, grep(" ", res)+1, nchar(as.character(res)))
 unique(res)
 mult_times <- function(x){
     if(x == "year" || x == "years"){
@@ -131,15 +132,23 @@ mult <- sapply(res, mult_times)
 
 
 res <- apply(as.matrix(values), 1, function(x) {trimws(substr(x, grep("[0-9]", x), grep(" ", x)))})
-num <- substr(res, grep("[0-9]", x), grep(" ", x))
+#num <- substr(res, grep("[0-9]", x), grep(" ", x))
 num <- as.numeric(res)
 num[num == 0] <- 0.5
 
-train$Days <- num*mult
-unique(res)
-unique(num)
+train$Days[!is.na(train$AgeuponOutcome)] <- num*mult
+sum(is.na(train$AgeuponOutcome))
 
+nam <- names(train)
+vec <-c(6,11,12,13,14,15,16)
 
+isna <- apply(train[,vec], 2, function(x){sum(is.na(x))})
+
+#preObj <- preProcess(train[,vec], method = "knnImpute")
+#train$Days <- predict(preObj, train[,vec])$Days
+
+#Impute Column mean
+train$Days[is.na(train$Days)] <- round(mean(train$Days, na.rm = TRUE),1)
 
 
 
